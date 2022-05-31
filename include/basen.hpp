@@ -41,6 +41,9 @@ template<class Iter1, class Iter2>
 void encode_b64(Iter1 start, Iter1 end, Iter2 out);
 
 template<class Iter1, class Iter2>
+void encode_b64url(Iter1 start, Iter1 end, Iter2 out);
+
+template<class Iter1, class Iter2>
 void decode_b16(Iter1 start, Iter1 end, Iter2 out);
 
 template<class Iter1, class Iter2>
@@ -48,6 +51,9 @@ void decode_b32(Iter1 start, Iter1 end, Iter2 out);
 
 template<class Iter1, class Iter2>
 void decode_b64(Iter1 start, Iter1 end, Iter2 out);
+
+template<class Iter1, class Iter2>
+void decode_b64url(Iter1 start, Iter1 end, Iter2 out);
 
 namespace impl
 {
@@ -155,6 +161,38 @@ struct b64_conversion_traits
             return c - '+' + alph_len * 2 + 10;
         } else if (c == '/') {
             return c - '/' + alph_len * 2 + 11;
+        }
+        return Error;
+    }
+};
+
+struct b64url_conversion_traits
+{
+    static size_t group_length()
+    {
+       return 6;
+    }
+
+    static char encode(unsigned int index)
+    {
+        static const char* const dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+        assert(index < strlen(dictionary));
+        return dictionary[index];
+    }
+
+    static char decode(char c)
+    {
+        const int alph_len = 26;
+        if (c >= 'A' && c <= 'Z') {
+            return c - 'A';
+        } else if (c >= 'a' && c <= 'z') {
+            return c - 'a' + alph_len * 1;
+        } else if (c >= '0' && c <= '9') {
+            return c - '0' + alph_len * 2;
+        } else if (c == '-') {
+            return c - '-' + alph_len * 2 + 10;
+        } else if (c == '_') {
+            return c - '_' + alph_len * 2 + 11;
         }
         return Error;
     }
@@ -273,6 +311,13 @@ void encode_b64(Iter1 start, Iter1 end, Iter2 out)
 }
 
 template<class Iter1, class Iter2>
+void encode_b64url(Iter1 start, Iter1 end, Iter2 out)
+{
+    encode<b64url_conversion_traits>(start, end, out);
+}
+
+
+template<class Iter1, class Iter2>
 void decode_b16(Iter1 start, Iter1 end, Iter2 out)
 {
     decode<b16_conversion_traits>(start, end, out);
@@ -288,6 +333,12 @@ template<class Iter1, class Iter2>
 void decode_b64(Iter1 start, Iter1 end, Iter2 out)
 {
     decode<b64_conversion_traits>(start, end, out);
+}
+
+template<class Iter1, class Iter2>
+void decode_b64url(Iter1 start, Iter1 end, Iter2 out)
+{
+    decode<b64url_conversion_traits>(start, end, out);
 }
 
 } // bn

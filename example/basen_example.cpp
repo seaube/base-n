@@ -36,6 +36,13 @@ int main()
 
     {
         string encoded;
+        bn::encode_b64url(in.begin(), in.end(), back_inserter(encoded));
+        bn::decode_b64url(encoded.begin(), encoded.end(), ostream_iterator<char>(cout, ""));
+        cout << endl;
+    }
+
+    {
+        string encoded;
         bn::encode_b64(in.begin(), in.end(), back_inserter(encoded));
         bn::decode_b64(encoded.begin(), encoded.end(), ostream_iterator<char>(cout, ""));
         cout << endl;
